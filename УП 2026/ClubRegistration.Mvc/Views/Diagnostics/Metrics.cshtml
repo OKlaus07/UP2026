@@ -1,0 +1,71 @@
+@*
+    Views/Diagnostics/Metrics.cshtml
+    Страница «/Diagnostics/Metrics» — таблица метрик производительности.
+    Относится к заданию от 25.11.2026 («Определение возможности
+    увеличения быстродействия программного продукта»).
+
+    Модель — List<MetricSnapshot>, который возвращает
+    PerformanceMetrics.Snapshot(). Если после таблицы есть текст
+    в ViewBag.Report, он показывает результат недавнего прогона
+    бенчмарка (сравнение «до/после оптимизации»).
+*@
+@using ClubRegistration.Mvc.Services.Optimization
+@model List<MetricSnapshot>
+@{
+    ViewData["Title"] = "Метрики производительности";
+}
+
+<h2>Метрики производительности</h2>
+
+<p>
+    Замеры собираются модулем <code>PerformanceMetrics</code> через
+    <code>System.Diagnostics.Stopwatch</code>. Чем больше сайт работает,
+    тем полнее статистика: видно среднее, минимальное и максимальное время
+    каждого участка кода, а также число ошибок.
+</p>
+
+@if (!string.IsNullOrEmpty((string)ViewBag.Report))
+{
+    @* Отчёт последнего прогона бенчмарка (задание 25.11, пункт 4). *@
+    <h3>Результат сравнения методов оптимизации</h3>
+    <pre>@ViewBag.Report</pre>
+}
+
+@if (Model == null || Model.Count == 0)
+{
+    <p>Пока нет ни одного замера. Выполните тестовый прогон:</p>
+}
+else
+{
+    <table border="1" cellpadding="6" cellspacing="0">
+        <thead>
+            <tr>
+                <th>Участок кода</th>      <!-- имя метрики -->
+                <th>Вызовов</th>           <!-- Count -->
+                <th>Ошибок</th>            <!-- Errors -->
+                <th>Всего, мс</th>         <!-- TotalMs -->
+                <th>Среднее, мс</th>       <!-- AvgMs -->
+                <th>Мин, мс</th>           <!-- MinMs -->
+                <th>Макс, мс</th>          <!-- MaxMs -->
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var m in Model)
+            {
+                <tr>
+                    <td>@m.Name</td>
+                    <td>@m.Count</td>
+                    <td>@m.Errors</td>
+                    <td>@m.TotalMs.ToString("F2")</td>
+                    <td>@m.AvgMs.ToString("F2")</td>
+                    <td>@m.MinMs.ToString("F2")</td>
+                    <td>@m.MaxMs.ToString("F2")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<p>
+    <a href="/Diagnostics/Benchmark?items=20000">Запустить сравнение «наивный код vs оптимизированный» (20 000 элементов)</a>
+</p>

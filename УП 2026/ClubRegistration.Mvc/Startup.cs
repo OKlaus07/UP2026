@@ -89,6 +89,11 @@ namespace ClubRegistration.Mvc
             // Регистрация сервисов приложения.
             services.AddScoped<SiteSettingsService>();
 
+            // Модуль диагностики производительности (задание 25.11.2026).
+            // Singletons: метрики собираются на всё время работы сайта,
+            // а бенчмарки не имеют состояния между запросами.
+            services.AddSingleton<ClubRegistration.Mvc.Services.Optimization.PerformanceBenchmarks>();
+
             // Подключение PostgreSQL из User Secrets.
             Db.Configure(
                 Configuration.GetConnectionString("DefaultConnection")
