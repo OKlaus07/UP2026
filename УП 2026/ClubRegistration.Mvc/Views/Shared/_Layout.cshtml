@@ -1,0 +1,61 @@
+@inject ClubRegistration.Mvc.Services.SiteSettingsService SiteSettings
+@{
+    var christmasThemeEnabled = SiteSettings.IsChristmasThemeEnabled();
+    int themeUserId;
+    int? currentUserId = User.Identity.IsAuthenticated && int.TryParse(User.Identity.Name, out themeUserId) ? themeUserId : (int?)null;
+    var currentTheme = SiteSettings.GetUserTheme(currentUserId, Context.Request.Cookies["site-theme"]);
+}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewBag.Title — Снежный клуб</title>
+    @* Меняем версию ссылки при обновлении темы, чтобы браузер не показывал старый CSS из кэша. *@
+    <link rel="stylesheet" href="~/css/site.css?v=family-controls-7" />
+</head>
+<body class="@(christmasThemeEnabled ? "holiday-theme" : "plain-theme") @(currentTheme == "dark" ? "dark-theme" : "light-theme")">
+    @if (christmasThemeEnabled)
+    {<div class="snow snow-one"></div><div class="snow snow-two"></div><div class="garland" aria-hidden="true"><span>✦</span> ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧</div>}
+    <header class="topbar">
+        <a class="brand" href="@Url.Action("Index","Clubs")"><span class="brand-icon">@(christmasThemeEnabled ? "🎄" : "❄")</span><span>Снежный клуб<small>кружки и секции</small></span></a>
+        <nav>
+            @Html.ActionLink("Каталог", "Index", "Clubs")
+            @Html.ActionLink("Расписание", "Schedule", "Clubs")
+            @if (User.Identity.IsAuthenticated)
+            {@Html.ActionLink("Мои заявки", "Mine", "Clubs")}
+            @if (User.Identity.IsAuthenticated)
+            {@Html.ActionLink("Профиль", "Index", "Profile")}
+            @if (User.Identity.IsAuthenticated)
+            {@Html.ActionLink("Семья", "Index", "Family")}
+            @if (User.Identity.IsAuthenticated)
+            {@Html.ActionLink("Сообщения", "Index", "Messages")}
+            @if (User.IsInRole("admin"))
+            {@Html.ActionLink("Администратор", "Manage", "Admin")}
+        </nav>
+        <div class="account-nav">
+            @using (Html.BeginForm("Toggle", "Theme", new { returnUrl = Context.Request.Path + Context.Request.QueryString }, FormMethod.Post, null, new { @class = "inline-form" }))
+            {@Html.AntiForgeryToken()<button class="button button-quiet" type="submit">@(currentTheme == "dark" ? "☀ Светлая" : "☾ Тёмная")</button>}
+            @if (User.Identity.IsAuthenticated)
+            {
+                <span class="welcome">С возвращением! ☃</span>
+                using (Html.BeginForm("Logout", "Account", null, FormMethod.Post, null, new { @class = "inline-form" }))
+                { @Html.AntiForgeryToken()<button class="button button-quiet" type="submit">Выйти</button> }
+        }
+        else
+        {
+            @Html.ActionLink("Войти", "Login", "Account", null, new { @class = "button button-quiet" })
+            @Html.ActionLink("Регистрация", "Register", "Account", null, new { @class = "button button-red" })
+        }
+        </div>
+    </header>
+    <main class="page-shell">
+        @if (TempData["Message"] != null)
+        {<div class="notice success">@TempData["Message"]</div>}
+        @if (TempData["Error"] != null)
+        {<div class="notice error">@TempData["Error"]</div>}
+        @RenderBody()
+    </main>
+    <footer>Пусть этой зимой сбываются новые мечты ✨ <span>Сделано с теплом и мандаринами</span></footer>
+</body>
+</html>

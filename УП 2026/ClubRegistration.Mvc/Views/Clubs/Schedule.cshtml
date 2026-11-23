@@ -1,0 +1,4 @@
+@model IList<ClubRegistration.Mvc.Models.ScheduleRow>
+@{ViewBag.Title="Расписание";}
+<section class="simple-page"><div class="eyebrow red-eyebrow">ПЛАНИРУЕМ ЗИМНИЕ ДНИ</div><h1>Расписание занятий <span>🕰️</span></h1><p class="muted">Найди удобный день и приходи за новыми впечатлениями.</p>
+<div class="table-wrap"><table><thead><tr><th>Направление</th><th>День</th><th>Время</th><th>Преподаватель</th><th>Кабинет</th></tr></thead><tbody>@foreach(var item in Model){<tr><td><strong>@item.ClubName</strong></td><td>@item.Day</td><td>@item.Start — @item.End</td><td>@item.Teacher</td><td>@item.Room</td></tr>}</tbody></table></div></section>

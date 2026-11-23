@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<!-- Платформа, совместимая с SDK .NET 5 -->
+		<TargetFramework>net5.0</TargetFramework>
+
+		<!-- Версия языка C# -->
+		<LangVersion>9.0</LangVersion>
+
+		<!-- Используем явные using в исходниках -->
+		<Nullable>disable</Nullable>
+		<ImplicitUsings>disable</ImplicitUsings>
+
+		<!-- Идентификатор хранилища User Secrets -->
+		<UserSecretsId>club-registration-local-secrets-2026</UserSecretsId>
+
+		<!-- Параметры сборки -->
+		<OutputType>Exe</OutputType>
+		<AssemblyName>ClubRegistration.Mvc</AssemblyName>
+		<RootNamespace>ClubRegistration.Mvc</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- Драйвер PostgreSQL, совместимый с .NET 5 -->
+		<PackageReference Include="Npgsql" Version="6.0.13" />
+	</ItemGroup>
+
+</Project>

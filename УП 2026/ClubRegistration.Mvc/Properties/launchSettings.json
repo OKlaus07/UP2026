@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "ClubRegistration.Mvc": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:53844",
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
+    }
+  }
+}

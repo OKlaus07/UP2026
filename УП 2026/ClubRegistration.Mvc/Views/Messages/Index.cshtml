@@ -1,0 +1,37 @@
+@model ClubRegistration.Mvc.Models.ChatPageModel
+@{
+    ViewBag.Title = "Сообщения преподавателям";
+}
+<section class="simple-page">
+    <div class="eyebrow red-eyebrow">СВЯЗЬ С ПРЕПОДАВАТЕЛЯМИ</div>
+    <h1>Сообщения <span>💬</span></h1>
+    <p class="muted">Родитель может написать преподавателю кружка, на который записан связанный ученик.</p>
+    @if (Model.CanStart)
+    {
+        <div class="admin-section">
+            <h2>Начать диалог</h2>
+            @if (!Model.Teachers.Any()) { <div class="empty-state">Сначала свяжите аккаунт ученика в разделе «Семья». Диалог доступен, когда у ученика есть заявка и преподавателю назначен аккаунт.</div> }
+            @foreach (var teacher in Model.Teachers)
+            {
+                using (Html.BeginForm("Start", "Messages", FormMethod.Post, new { @class = "inline-form chat-start-form" }))
+                {
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="studentId" value="@teacher.StudentId" />
+                    <input type="hidden" name="teacherId" value="@teacher.TeacherId" />
+                    <button class="button button-green" type="submit">Написать: @teacher.Name</button>
+                }
+            }
+        </div>
+    }
+    <h2>Ваши диалоги</h2>
+    @if (!Model.Conversations.Any()) { <div class="empty-state">Пока нет диалогов.</div> }
+    <div class="conversation-list">
+    @foreach (var conversation in Model.Conversations)
+    {
+        <a class="conversation-card" href="@Url.Action("Conversation", new { id = conversation.Id })">
+            <strong>@conversation.StudentName · @conversation.TeacherName</strong>
+            <span>@conversation.LastMessage</span>
+        </a>
+    }
+    </div>
+</section>

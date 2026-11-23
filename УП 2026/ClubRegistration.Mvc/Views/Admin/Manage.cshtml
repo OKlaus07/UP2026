@@ -1,0 +1,81 @@
+@model ClubRegistration.Mvc.Models.AdminDashboard
+@inject ClubRegistration.Mvc.Services.SiteSettingsService SiteSettings
+@{ViewBag.Title="Управление";}
+<section class="simple-page"><div class="eyebrow red-eyebrow">ПАНЕЛЬ АДМИНИСТРАТОРА</div><h1>Зимняя мастерская <span>🛠️</span></h1><p class="muted">@Model.Statistics</p><p class="muted"><strong>Популярные направления:</strong> @Model.Popular</p>
+<div class="admin-links">@Html.ActionLink("Рассмотреть заявки →","Requests","Admin",null,new {@class="button button-red"})</div>
+<div class="admin-section"><h2>Оформление сайта</h2><p>Новогодняя тема сейчас <strong>@(SiteSettings.IsChristmasThemeEnabled() ? "включена" : "выключена")</strong>.</p><div class="theme-admin-actions">@using(Html.BeginForm("ToggleChristmasTheme","Admin",FormMethod.Post,new {@class="inline-form"})){@Html.AntiForgeryToken()<input type="hidden" name="enabled" value="true"/><button class="button button-green" type="submit" disabled="@(SiteSettings.IsChristmasThemeEnabled()?"disabled":null)">Включить гирлянды и зимнее оформление</button>}@using(Html.BeginForm("ToggleChristmasTheme","Admin",FormMethod.Post,new {@class="inline-form"})){@Html.AntiForgeryToken()<input type="hidden" name="enabled" value="false"/><button class="button button-quiet" type="submit" disabled="@(!SiteSettings.IsChristmasThemeEnabled()?"disabled":null)">Выключить зимнее оформление</button>}</div></div>
+<div class="admin-section"><h2>Категории кружков</h2>@using(Html.BeginForm("SaveCategory","Admin",FormMethod.Post,new {@class="admin-form compact-form"})){@Html.AntiForgeryToken()<input type="hidden" name="id" value="0"/><input name="name" maxlength="100" placeholder="Новая категория" required/><button class="button button-green">Добавить категорию</button>}<div class="category-list">@foreach(var category in Model.CategoryRows){<div class="category-row"><span class="category-tag">@category.Name · кружков: @category.ClubsCount</span>@using(Html.BeginForm("SaveCategory","Admin",FormMethod.Post,new {@class="inline-form category-edit-form"})){@Html.AntiForgeryToken()<input type="hidden" name="id" value="@category.Id"/><input name="name" value="@category.Name" maxlength="100" required/><button class="link-button">Сохранить название</button>}@if(category.ClubsCount==0){using(Html.BeginForm("DeleteCategory","Admin",FormMethod.Post,new {@class="inline-form"})){@Html.AntiForgeryToken()<input type="hidden" name="id" value="@category.Id"/><button class="link-button danger-link">Удалить</button>}}</div>}</div></div>
+<div class="admin-section"><h2>Кружки и секции</h2>
+@{var club=Model.EditClub??new ClubRegistration.Mvc.Models.AdminClubRow();}
+@using(Html.BeginForm("SaveClub","Admin",FormMethod.Post,new {@class="admin-form"})){@Html.AntiForgeryToken()<input type="hidden" name="Id" value="@club.Id"/><label>Название<input name="Name" value="@club.Name" required/></label><label>Категория@Html.DropDownList("CategoryId",ViewBag.Categories as IEnumerable<SelectListItem>,"Выберите")</label><label>Возраст от<input type="number" min="0" name="MinAge" value="@club.MinAge"/></label><label>Возраст до<input type="number" min="0" name="MaxAge" value="@(club.MaxAge==0?18:club.MaxAge)"/></label><label>Стоимость<input type="number" min="0" step="0.01" name="Price" value="@club.Price"/></label><label>Мест<input type="number" min="1" name="Capacity" value="@(club.Capacity==0?10:club.Capacity)"/></label><label>Преподаватель@Html.DropDownList("TeacherId",ViewBag.Teachers as IEnumerable<SelectListItem>,"Не назначен")</label><label class="wide-label">Описание<textarea name="Description" rows="2">@club.Description</textarea></label><button class="button button-green">@(club.Id==0?"Добавить кружок":"Сохранить изменения")</button>}
+<div class="table-wrap"><table><thead><tr><th>Название</th><th>Категория</th><th>Преподаватель</th><th>Возраст</th><th>Места</th><th>Состояние</th><th>Действия</th></tr></thead><tbody>@foreach(var x in Model.Clubs){<tr><td>@x.Name</td><td>@x.Category</td><td>@x.Teacher</td><td>@(x.MinAge) – @(x.MaxAge)</td><td>@x.Capacity</td><td>@(x.Active?"Активен":"Выключен")</td><td class="action-cell">@Html.ActionLink("Изменить","Manage",new{club=x.Id}) @if(x.Active){using(Html.BeginForm("DeactivateClub","Admin",FormMethod.Post,new{@class="inline-form"})){@Html.AntiForgeryToken()<input type="hidden" name="id" value="@x.Id"/><button class="link-button">Выключить</button>}}else{using(Html.BeginForm("ActivateClub","Admin",FormMethod.Post,new{@class="inline-form"})){@Html.AntiForgeryToken()<input type="hidden" name="id" value="@x.Id"/><button class="link-button">Включить</button>}} @using(Html.BeginForm("DeleteClub","Admin",FormMethod.Post,new{@class="inline-form"})){@Html.AntiForgeryToken()<input type="hidden" name="id" value="@x.Id"/><button class="link-button danger-link">Удалить</button>}</td></tr>}</tbody></table></div></div>
+<div class="admin-section"><h2>Преподаватели</h2>@{var teacher=Model.EditTeacher??new ClubRegistration.Mvc.Models.AdminTeacherRow();}
+@using(Html.BeginForm("SaveTeacher","Admin",FormMethod.Post,new {@class="admin-form"})){@Html.AntiForgeryToken()<input type="hidden" name="Id" value="@teacher.Id"/><label>Имя<input name="FirstName" value="@teacher.FirstName" required/></label><label>Фамилия<input name="LastName" value="@teacher.LastName" required/></label><label>Отчество<input name="MiddleName" value="@teacher.MiddleName"/></label><label>Специализация<input name="Specialty" value="@teacher.Specialty" required/></label><label>Телефон<input name="Phone" value="@teacher.Phone"/></label><label>Аккаунт для входа@Html.DropDownList("UserId",ViewBag.TeacherAccounts as IEnumerable<SelectListItem>,"Без аккаунта")</label><label class="wide-label">Описание<textarea name="Description" rows="2">@teacher.Description</textarea></label><button class="button button-green">@(teacher.Id==0?"Добавить преподавателя":"Сохранить преподавателя")</button>}
+<div class="table-wrap"><table><thead><tr><th>ФИО</th><th>Специализация</th><th>Телефон</th><th>Состояние</th><th></th></tr></thead><tbody>@foreach(var x in Model.Teachers){<tr><td>@x.FullName</td><td>@x.Specialty</td><td>@x.Phone</td><td>@(x.Active?"Активен":"Выключен")</td><td>@Html.ActionLink("Изменить","Manage",new{teacher=x.Id}) @if(x.Active){using(Html.BeginForm("DeactivateTeacher","Admin",FormMethod.Post,new{@class="inline-form"})){@Html.AntiForgeryToken()<input type="hidden" name="id" value="@x.Id"/><button class="link-button">Деактивировать</button>}}else{using(Html.BeginForm("ActivateTeacher","Admin",FormMethod.Post,new{@class="inline-form"})){@Html.AntiForgeryToken()<input type="hidden" name="id" value="@x.Id"/><button class="link-button">Активировать</button>}}</td></tr>}</tbody></table></div></div>
+<div class="admin-section"><h2>Расписание</h2>@{var schedule=Model.EditSchedule??new ClubRegistration.Mvc.Models.AdminScheduleRow();}
+@using(Html.BeginForm("SaveSchedule","Admin",FormMethod.Post,new {@class="admin-form"})){@Html.AntiForgeryToken()<input type="hidden" name="Id" value="@schedule.Id"/><label>Кружок@Html.DropDownList("ClubId",ViewBag.Clubs as IEnumerable<SelectListItem>,"Выберите кружок")</label><label>Преподаватель@Html.DropDownList("TeacherId",ViewBag.ScheduleTeachers as IEnumerable<SelectListItem>,"Выберите преподавателя")</label><label>День<select name="Weekday"><option value="1" selected="@(schedule.Weekday==1?"selected":null)">Понедельник</option><option value="2" selected="@(schedule.Weekday==2?"selected":null)">Вторник</option><option value="3" selected="@(schedule.Weekday==3?"selected":null)">Среда</option><option value="4" selected="@(schedule.Weekday==4?"selected":null)">Четверг</option><option value="5" selected="@(schedule.Weekday==5?"selected":null)">Пятница</option><option value="6" selected="@(schedule.Weekday==6?"selected":null)">Суббота</option><option value="7" selected="@(schedule.Weekday==7?"selected":null)">Воскресенье</option></select></label><label>Начало<input type="time" name="Start" value="@schedule.Start" required/></label><label>Окончание<input type="time" name="End" value="@schedule.End" required/></label><label>Кабинет<input name="Room" value="@schedule.Room" required/></label><button class="button button-green">@(schedule.Id==0?"Добавить занятие":"Сохранить расписание")</button>}
+<div class="table-wrap"><table><thead><tr><th>Кружок</th><th>День</th><th>Время</th><th>Преподаватель</th><th>Кабинет</th><th></th></tr></thead><tbody>@foreach(var x in Model.Schedules){<tr><td>@x.Club</td><td>@x.Day</td><td>@(x.Start) – @(x.End)</td><td>@x.Teacher</td><td>@x.Room</td><td>@Html.ActionLink("Изменить","Manage",new{schedule=x.Id}) @using(Html.BeginForm("DeleteSchedule","Admin",FormMethod.Post,new{@class="inline-form"})){@Html.AntiForgeryToken()<input type="hidden" name="id" value="@x.Id"/><button class="link-button danger-link">Удалить</button>}</td></tr>}</tbody></table></div></div>
+<div class="admin-section">
+    <h2>Пользователи и аккаунты</h2>
+    <p class="muted">Создание, категория аккаунта, роль и удаление. Администраторы не могут изменить или удалить собственную запись.</p>
+    @using (Html.BeginForm("CreateUser", "Admin", FormMethod.Post, new { @class = "admin-form user-create-form" }))
+    {
+        @Html.AntiForgeryToken()
+        <label>Имя<input name="FirstName" maxlength="80" required /></label>
+        <label>Фамилия<input name="LastName" maxlength="80" required /></label>
+        <label>Электронная почта<input type="email" name="Email" maxlength="254" required /></label>
+        <label>Телефон<input name="Phone" maxlength="30" /></label>
+        <label>Пароль<input type="password" name="Password" minlength="8" required /></label>
+        <label>Категория<select name="AccountCategory" required><option value="student">Ученик</option><option value="parent">Родитель</option><option value="college_student">Студент</option><option value="teacher">Преподаватель</option></select></label>
+        <label>Роль<select name="Role" required><option value="user">Пользователь</option><option value="admin">Администратор</option></select></label>
+        <button class="button button-green">Создать аккаунт</button>
+    }
+    <div class="table-wrap"><table>
+        <thead><tr><th>Имя</th><th>Электронная почта</th><th>Телефон</th><th>Категория</th><th>Роль</th><th>Статус</th><th>Управление</th></tr></thead>
+        <tbody>
+        @foreach (var x in Model.Users)
+        {
+            <tr><td>@x.Name</td><td>@x.Email</td><td>@x.Phone</td><td>@x.AccountCategory</td><td>@(x.Role == "admin" ? "Администратор" : "Пользователь")</td><td>@(x.Active ? "Активен" : "Выключен")</td>
+                <td class="action-cell">
+                <details class="admin-user-edit"><summary>Изменить данные</summary>
+                    @using (Html.BeginForm("SaveUser", "Admin", FormMethod.Post, new { @class = "admin-form user-edit-form" }))
+                    {
+                        @Html.AntiForgeryToken()<input type="hidden" name="Id" value="@x.Id" />
+                        <label>Имя<input name="FirstName" value="@x.FirstName" maxlength="80" required /></label>
+                        <label>Фамилия<input name="LastName" value="@x.LastName" maxlength="80" required /></label>
+                        <label>Почта<input type="email" name="Email" value="@x.Email" maxlength="254" required /></label>
+                        <label>Телефон<input name="Phone" value="@x.Phone" maxlength="30" /></label>
+                        <label>Категория<select name="AccountCategory"><option value="parent" selected="@(x.CategoryCode == "parent" ? "selected" : null)">Родитель</option><option value="student" selected="@(x.CategoryCode == "student" ? "selected" : null)">Ученик</option><option value="college_student" selected="@(x.CategoryCode == "college_student" ? "selected" : null)">Студент</option><option value="teacher" selected="@(x.CategoryCode == "teacher" ? "selected" : null)">Преподаватель</option></select></label>
+                        <button class="button button-green">Сохранить данные</button>
+                    }
+                </details>
+                @if (x.Id != int.Parse(User.Identity.Name))
+                {
+                    using (Html.BeginForm("SetUserRole", "Admin", FormMethod.Post, new { @class = "inline-form user-role-form" }))
+                    {
+                        @Html.AntiForgeryToken()<input type="hidden" name="id" value="@x.Id" />
+                        <select name="role" aria-label="Роль пользователя"><option value="user" selected="@(x.Role == "user" ? "selected" : null)">Пользователь</option><option value="admin" selected="@(x.Role == "admin" ? "selected" : null)">Администратор</option></select>
+                        <button class="link-button">Сохранить роль</button>
+                    }
+                    @if (x.Role != "admin")
+                    {
+                        if (x.Active)
+                        {
+                            using (Html.BeginForm("DeactivateUser", "Admin", FormMethod.Post, new { @class = "inline-form" }))
+                            { @Html.AntiForgeryToken()<input type="hidden" name="id" value="@x.Id" /><button class="link-button danger-link">Деактивировать</button> }
+                        }
+                        else
+                        {
+                            using (Html.BeginForm("ActivateUser", "Admin", FormMethod.Post, new { @class = "inline-form" }))
+                            { @Html.AntiForgeryToken()<input type="hidden" name="id" value="@x.Id" /><button class="link-button">Активировать</button> }
+                        }
+                        using (Html.BeginForm("DeleteUser", "Admin", FormMethod.Post, new { @class = "inline-form", onsubmit = "return confirm('Удалить аккаунт без заявок? История заявок сохраняется.')" }))
+                        { @Html.AntiForgeryToken()<input type="hidden" name="id" value="@x.Id" /><button class="link-button danger-link">Удалить</button> }
+                    }
+                }
+                </td>
+            </tr>
+        }
+        </tbody></table></div>
+</div>
+</section>

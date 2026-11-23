@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<!-- Совместимость с основным проектом и Visual Studio 2019 -->
+		<TargetFramework>net5.0</TargetFramework>
+
+		<!-- Настройки тестового проекта -->
+		<IsTestProject>true</IsTestProject>
+		<IsPackable>false</IsPackable>
+
+		<!-- Настройки C# -->
+		<LangVersion>9.0</LangVersion>
+		<Nullable>disable</Nullable>
+		<ImplicitUsings>disable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- Средства запуска тестов, совместимые со старой средой VS -->
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+
+		<!-- Тестовый фреймворк -->
+		<PackageReference Include="xunit" Version="2.4.2" />
+
+		<!-- Интеграция xUnit с Visual Studio -->
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- Ссылка на основной проект -->
+		<ProjectReference Include="..\ClubRegistration.Mvc\ClubRegistration.Mvc.csproj" />
+	</ItemGroup>
+
+</Project>

@@ -1,0 +1,5 @@
+@model ClubRegistration.Mvc.Controllers.LoginModel
+@{ ViewBag.Title="Вход"; }
+<section class="auth-card"><div class="auth-emoji">🧣</div><div class="eyebrow red-eyebrow">РАДЫ ТЕБЯ ВИДЕТЬ</div><h1>С возвращением!</h1><p class="muted">Войди, чтобы продолжить своё приключение.</p>
+@using(Html.BeginForm("Login","Account",FormMethod.Post)){@Html.AntiForgeryToken()@Html.ValidationSummary(true,"",new {@class="validation"})<label>@Html.LabelFor(m=>m.Email)@Html.TextBoxFor(m=>m.Email,new {@type="email",autocomplete="username"})@Html.ValidationMessageFor(m=>m.Email)</label><label>@Html.LabelFor(m=>m.Password)@Html.PasswordFor(m=>m.Password,new {@autocomplete="current-password"})@Html.ValidationMessageFor(m=>m.Password)</label><label class="remember">@Html.CheckBoxFor(m=>m.RememberMe) Запомнить меня</label><button class="button button-red button-wide" type="submit">Войти в аккаунт</button>}
+<p class="auth-switch">Впервые у нас? @Html.ActionLink("Создать аккаунт","Register")</p></section>

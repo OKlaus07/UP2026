@@ -1,0 +1,6 @@
+@model IList<ClubRegistration.Mvc.Models.EnrollmentRow>
+@{ ViewBag.Title="Заявки — администратор"; }
+<section class="simple-page"><div class="eyebrow red-eyebrow">ПАНЕЛЬ АДМИНИСТРАТОРА</div><h1>Заявки ребят <span>🔔</span></h1><p class="muted">Подарите кому-то новое увлечение.</p>
+<div class="table-wrap"><table><thead><tr><th>Пользователь</th><th>Почта</th><th>Направление</th><th>Подана</th><th>Статус</th><th>Решение</th></tr></thead><tbody>
+@foreach(var item in Model){<tr><td>@item.UserName</td><td>@item.Email</td><td>@item.ClubName</td><td>@item.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy")</td><td><span class="status">@item.Status</span></td><td>@if(item.Status=="Ожидает рассмотрения"){using(Html.BeginForm("SetStatus","Admin",FormMethod.Post,new {@class="decision-form"})){@Html.AntiForgeryToken()<input type="hidden" name="id" value="@item.Id"/><button class="button button-green" name="status" value="approved">Одобрить</button><button class="button button-quiet" name="status" value="rejected">Отклонить</button>}}</td></tr>}
+</tbody></table></div></section>

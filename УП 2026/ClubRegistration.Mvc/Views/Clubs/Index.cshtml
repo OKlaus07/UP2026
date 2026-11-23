@@ -1,0 +1,29 @@
+@model IList<ClubRegistration.Mvc.Models.ClubCard>
+@{ ViewBag.Title = "Каталог кружков"; var categories = ViewBag.Categories as IList<string> ?? new List<string>(); }
+<section class="hero">
+    <div class="hero-copy"><div class="eyebrow">❄ ЗИМНЯЯ СЕССИЯ 2026 ❄</div><h1>Найди занятие,<br /><em>которое зажжёт</em></h1><p>Новые друзья, первые победы и любимое дело ждут за снежной дверью.</p><a class="button button-red" href="#catalog">Выбрать кружок <span>↓</span></a></div>
+    <div class="hero-art" aria-hidden="true"><div class="moon"></div><div class="tree tree-back">♠</div><div class="tree tree-front">♠</div><div class="snowman">⛄</div><div class="gift gift-one">🎁</div><div class="gift gift-two">🎁</div></div>
+    <div class="hero-sparkle sparkle-one">✦</div><div class="hero-sparkle sparkle-two">✧</div>
+</section>
+<section id="catalog" class="catalog-section">
+    <div class="section-heading"><div><div class="eyebrow red-eyebrow">ТВОЯ ЗИМА, ТВОИ ПРАВИЛА</div><h2>Выбирай своё направление</h2></div><span class="count-pill">@Model.Count кружков</span></div>
+    <form class="filter-bar" method="get" action="@Url.Action("Index")">
+        <label class="search-wrap"><span>⌕</span><input type="search" name="search" value="@ViewBag.Search" placeholder="Что тебе интересно?" /></label>
+        <select name="category"><option value="">Все направления</option>@foreach (var category in categories) { <option value="@category" selected="@(category == (string)ViewBag.Category ? "selected" : null)">@category</option> }</select>
+        <button class="button button-green" type="submit">Найти занятие</button>
+    </form>
+    @if (Model.Count == 0) { <div class="empty-state">Пока ничего не найдено. Попробуйте изменить поиск. ❄</div> }
+    <div class="club-grid">
+    @foreach (var club in Model) {
+        <article class="club-card">
+            <div class="card-top"><span class="category-tag">@club.Category</span><span class="places">@(club.FreePlaces > 0 ? "● Мест: " + club.FreePlaces : "Мест нет")</span></div>
+            <h3>@club.Name</h3><p class="club-description">@club.Description</p>
+            <div class="club-meta"><span>🧒 @(club.AgeFrom) – @(club.AgeTo) лет</span><span>👩‍🏫 @club.Teacher</span><span>🕒 @club.Schedule</span></div>
+            <div class="card-bottom"><span class="price">@(club.Price == 0 ? "Бесплатно" : club.Price.ToString("N0") + " ₽ / мес.")</span>
+                @if (User.Identity.IsAuthenticated) { using (Html.BeginForm("Apply","Clubs",FormMethod.Post,new { @class="inline-form" })) { @Html.AntiForgeryToken()<input type="hidden" name="id" value="@club.Id"/>if(club.FreePlaces>0){<button class="button button-red" type="submit">Записаться</button>}else{<button class="button button-quiet" type="button" disabled="disabled">Мест нет</button>} } }
+                else { @Html.ActionLink("Записаться","Login","Account",null,new {@class="button button-red"}) }
+            </div>
+        </article>
+    }
+    </div>
+</section>

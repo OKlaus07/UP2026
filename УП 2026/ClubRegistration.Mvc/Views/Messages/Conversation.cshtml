@@ -1,0 +1,27 @@
+@model ClubRegistration.Mvc.Models.ChatPageModel
+@{
+    ViewBag.Title = "Диалог с преподавателем";
+}
+<section class="simple-page">
+    <div class="eyebrow red-eyebrow">ЛИЧНЫЕ СООБЩЕНИЯ</div>
+    <h1>Диалог <span>💬</span></h1>
+    @if (Model.Current != null) { <p class="muted">Ученик: @Model.Current.StudentName · Преподаватель: @Model.Current.TeacherName</p> }
+    <div class="message-thread">
+        @if (!Model.Messages.Any()) { <div class="empty-state">Напишите первое сообщение внизу страницы.</div> }
+        @foreach (var message in Model.Messages)
+        {
+            <article class="chat-message @(message.IsMine ? "mine" : "theirs")">
+                <strong>@message.SenderName</strong><p>@message.Body</p>
+                <time>@message.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</time>
+            </article>
+        }
+    </div>
+    @using (Html.BeginForm("Send", "Messages", FormMethod.Post, new { @class = "chat-compose" }))
+    {
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="conversationId" value="@Model.Current.Id" />
+        <label for="chatBody">Сообщение</label>
+        <textarea id="chatBody" name="body" rows="3" maxlength="4000" required placeholder="Напишите сообщение преподавателю..."></textarea>
+        <button class="button button-green" type="submit">Отправить</button>
+    }
+</section>

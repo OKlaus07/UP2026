@@ -1,0 +1,100 @@
+@model ClubRegistration.Mvc.Models.FamilyPageModel
+@{
+    ViewBag.Title = "Семейный кабинет";
+}
+<section class="simple-page">
+    <div class="eyebrow red-eyebrow">СЕМЕЙНЫЙ КАБИНЕТ</div>
+    <h1>Связь родителя и ученика <span>👨‍👩‍👧</span></h1>
+    @if (Model.AccountCategory == "parent")
+    {
+        <p class="muted">Добавьте аккаунт ученика. Он должен подтвердить запрос. После подтверждения вы увидите его заявки и сможете отменить ожидающую запись.</p>
+        <div class="admin-section family-invite">
+            @using (Html.BeginForm("Invite", "Family", FormMethod.Post, new { @class = "compact-form" }))
+            {
+                @Html.AntiForgeryToken()
+                <input type="email" name="StudentEmail" maxlength="254" placeholder="Почта аккаунта ученика" required />
+                <button class="button button-green">Отправить запрос</button>
+            }
+        </div>
+        <h2>Ученики</h2>
+        @if (!Model.Links.Any()) { <div class="empty-state">Пока нет связанных аккаунтов.</div> }
+        @foreach (var link in Model.Links)
+        {
+            <div class="admin-section family-card">
+                <div class="family-card-heading"><h3>@link.Name</h3><span class="status">@(link.Status == "active" ? "Связь подтверждена" : link.Status == "pending" ? "Ожидает подтверждения" : "Запрос отклонён")</span></div>
+                <p class="muted">@link.Email · @link.Phone</p>
+                @if (link.Status == "active")
+                {
+                    <details>
+                        <summary>Изменить личные данные ученика</summary>
+                        @using (Html.BeginForm("SaveStudent", "Family", FormMethod.Post, new { @class = "admin-form family-edit-form" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="StudentId" value="@link.OtherUserId" />
+                            <label>Имя<input name="FirstName" value="@link.FirstName" maxlength="80" required /></label>
+                            <label>Фамилия<input name="LastName" value="@link.LastName" maxlength="80" required /></label>
+                            <label>Телефон<input name="Phone" value="@link.Phone" maxlength="30" /></label>
+                            <button class="button button-green">Сохранить</button>
+                        }
+                    </details>
+                }
+                @using (Html.BeginForm("RemoveLink", "Family", FormMethod.Post, new { @class = "inline-form family-remove" }))
+                {
+                    @Html.AntiForgeryToken()<input type="hidden" name="id" value="@link.Id" />
+                    <button class="link-button danger-link">@(link.Status == "pending" ? "Отменить запрос" : "Убрать из семейного кабинета")</button>
+                }
+            </div>
+        }
+        <h2>Заявки учеников</h2>
+        @if (!Model.Enrollments.Any()) { <div class="empty-state">У связанных учеников пока нет заявок.</div> }
+        @if (Model.Enrollments.Any())
+        {
+            <div class="table-wrap"><table><thead><tr><th>Ученик</th><th>Кружок</th><th>Статус</th><th>Действие</th></tr></thead><tbody>
+            @foreach (var enrollment in Model.Enrollments)
+            {
+                <tr><td>@enrollment.StudentName</td><td>@enrollment.ClubName</td><td><span class="status">@enrollment.Status</span></td><td>
+                @if (enrollment.Status == "Ожидает рассмотрения")
+                {
+                    using (Html.BeginForm("CancelEnrollment", "Family", FormMethod.Post, new { @class = "inline-form" }))
+                    {
+                        @Html.AntiForgeryToken()<input type="hidden" name="id" value="@enrollment.Id" />
+                        <button class="button button-quiet">Отменить заявку</button>
+                    }
+                }
+                </td></tr>
+            }
+            </tbody></table></div>
+        }
+    }
+    else if (Model.AccountCategory == "student")
+    {
+        <p class="muted">Родительский контроль включается только с вашего согласия. Подтверждайте запросы только от человека, которому доверяете.</p>
+        <h2>Запросы родителей</h2>
+        @if (!Model.Links.Any()) { <div class="empty-state">Запросов пока нет.</div> }
+        @foreach (var link in Model.Links)
+        {
+            <div class="admin-section family-card"><h3>@link.Name</h3><p class="muted">@link.Email</p>
+                @if (link.Status == "pending")
+                {
+                    @using (Html.BeginForm("Decide", "Family", FormMethod.Post, new { @class = "inline-form" }))
+                    {
+                        @Html.AntiForgeryToken()<input type="hidden" name="id" value="@link.Id" />
+                        <button class="button button-green" name="accept" value="true">Подтвердить</button>
+                        <button class="button button-quiet" name="accept" value="false">Отклонить</button>
+                    }
+                }
+                else if (link.Status == "active")
+                {
+                    <span class="status">Связь подтверждена</span>
+                    @using (Html.BeginForm("RemoveParent", "Family", FormMethod.Post, new { @class = "inline-form family-remove" }))
+                    { @Html.AntiForgeryToken()<input type="hidden" name="id" value="@link.Id" /><button class="link-button danger-link">Отозвать родительский доступ</button> }
+                }
+                else { <span class="status">Запрос отклонён</span> }
+            </div>
+        }
+    }
+    else
+    {
+        <div class="empty-state">Раздел доступен аккаунтам с категорией «Родитель» или «Ученик».</div>
+    }
+</section>
